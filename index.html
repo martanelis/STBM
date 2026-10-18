@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Digital Pendataan 5 Pilar STBM - UPT Puskesmas Mandrehe Utara</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            stbm: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            },
+            air: {
+              50: '#f0f9ff',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Styling scrollbar halus */
+    ::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      #printAreaTabel, #printAreaTabel * {
+        visibility: visible;
+      }
+      #printAreaTabel {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white;
+        padding: 10px;
+      }
+      .no-print {
+        display: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased min-h-screen flex flex-col">
+
+  <!-- ========================================== -->
+  <!-- HEADER & KOP INSTANSI RESMI -->
+  <!-- ========================================== -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between py-3.5 gap-3">
+        
+        <!-- Logo & Identitas -->
+        <div class="flex items-center space-x-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-stbm-700 via-stbm-600 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-stbm-600/30 shrink-0">
+            <i class="fa-solid fa-hands-bubbles text-2xl"></i>
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="text-[10px] font-black tracking-wider uppercase px-2 py-0.5 bg-emerald-100 text-emerald-800 rounded-md">Dinkes Kab. Nias Barat</span>
+              <span class="text-[10px] text-slate-400 font-medium hidden sm:inline">• Kesling & Promkes</span>
+            </div>
+            <h1 class="text-base md:text-lg font-extrabold text-slate-900 leading-tight">
+              UPT Puskesmas Mandrehe Utara
+            </h1>
+            <p class="text-xs text-slate-500 font-medium">Sistem Digital Pendataan & Rekapitulasi 5 Pilar STBM (12 Desa Wilayah Kerja)</p>
+          </div>
+        </div>
+
+        <!-- Meta Surveyor & Info Cepat -->
+        <div class="flex items-center justify-between md:justify-end gap-3 text-xs border-t md:border-t-0 pt-2 md:pt-0 border-slate-100">
+          <div class="bg-slate-50 border border-slate-200/80 px-3 py-1.5 rounded-xl flex items-center gap-2.5">
+            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></div>
+            <div>
+              <span class="text-[10px] text-slate-400 block font-medium">Wilayah Kerja:</span>
+              <span class="font-bold text-slate-700">Kec. Mandrehe Utara</span>
+            </div>
+          </div>
+          <button onclick="switchTab('tab-form')" class="px-3.5 py-2 bg-stbm-600 hover:bg-stbm-700 text-white font-bold rounded-xl shadow-sm transition flex items-center gap-2">
+            <i class="fa-solid fa-user-plus text-xs"></i>
+            <span>Input Data KK Baru</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Navigasi Menu Tab -->
+    <div class="bg-slate-50/90 border-t border-slate-200 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto flex space-x-2 overflow-x-auto py-2 scrollbar-none text-xs font-semibold" id="menuTabs">
+        <button onclick="switchTab('tab-dashboard')" id="btn-tab-dashboard" class="px-4 py-2 rounded-xl flex items-center gap-2 transition text-white bg-stbm-600 shadow-sm">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Dashboard & Capaian STBM</span>
+        </button>
+        <button onclick="switchTab('tab-form')" id="btn-tab-form" class="px-4 py-2 rounded-xl flex items-center gap-2 transition text-slate-600 hover:text-slate-900 hover:bg-white">
+          <i class="fa-solid fa-file-pen"></i>
+          <span>Formulir Input 5 Pilar</span>
+        </button>
+        <button onclick="switchTab('tab-tabel')" id="btn-tab-tabel" class="px-4 py-2 rounded-xl flex items-center gap-2 transition text-slate-600 hover:text-slate-900 hover:bg-white">
+          <i class="fa-solid fa-table-list"></i>
+          <span>Rekapitulasi Data (Excel Sheet)</span>
+        </button>
+        <button onclick="switchTab('tab-panduan')" id="btn-tab-panduan" class="px-4 py-2 rounded-xl flex items-center gap-2 transition text-slate-600 hover:text-slate-900 hover:bg-white">
+          <i class="fa-solid fa-book-medical"></i>
+          <span>Pedoman 5 Pilar Kemenkes</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================== -->
+  <!-- KONTEN UTAMA -->
+  <!-- ========================================== -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+    <!-- ========================================== -->
+    <!-- PANEL 1: DASHBOARD ANALITIK & GRAFIK -->
+    <!-- ========================================== -->
+    <section id="panel-dashboard" class="space-y-6">
+      
+      <!-- Banner Ringkasan STBM -->
+      <div class="bg-gradient-to-r from-stbm-800 via-emerald-800 to-teal-900 rounded-3xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
+        <div class="relative z-10 max-w-3xl space-y-2.5">
+          <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/15 backdrop-blur-md rounded-full text-xs font-semibold text-emerald-200">
+            <i class="fa-solid fa-shield-virus"></i> Sanitasi Total Berbasis Masyarakat (STBM)
+          </div>
+          <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Evaluasi Kesiapan Sanitasi Rumah Tangga Mandrehe Utara</h2>
+          <p class="text-emerald-100 text-xs md:text-sm leading-relaxed">
+            Pemantauan langsung 5 pilar perubahan perilaku higiene sanitasi: Bebas BABS (SBS), CTPS dengan sabun, Pengelolaan Air Minum dan Makanan, Pengelolaan Sampah Sehat, serta Pengelolaan Limbah Cair Rumah Tangga.
+          </p>
+          <div class="pt-2 flex flex-wrap gap-2 text-xs">
+            <span class="px-3 py-1.5 bg-white/10 rounded-xl border border-white/20 font-medium">12 Desa Binaan</span>
+            <span class="px-3 py-1.5 bg-white/10 rounded-xl border border-white/20 font-medium">Batas ODF: 100% Akses Jamban</span>
+            <span class="px-3 py-1.5 bg-emerald-500/80 text-white font-bold rounded-xl">Target STBM Tuntas 2026</span>
+          </div>
+        </div>
+        <i class="fa-solid fa-faucet-detergent absolute -right-6 -bottom-8 text-white/10 text-9xl pointer-events-none"></i>
+      </div>
+
+      <!-- Kartu Indikator 5 Pilar -->
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5">
+        <!-- Pilar 1 -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-slate-500">
+            <span class="font-bold uppercase text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">Pilar 1</span>
+            <i class="fa-solid fa-restroom text-emerald-600 text-base"></i>
+          </div>
+          <div class="my-2">
+            <div class="text-2xl font-black text-slate-900" id="cardP1Pct">0%</div>
+            <p class="text-[11px] font-semibold text-slate-600 mt-0.5">Stop BABS (SBS)</p>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-1.5">
+            <div id="barP1" class="bg-emerald-500 h-1.5 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Pilar 2 -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-slate-500">
+            <span class="font-bold uppercase text-[10px] text-blue-700 bg-blue-50 px-2 py-0.5 rounded">Pilar 2</span>
+            <i class="fa-solid fa-hands-holding-child text-blue-600 text-base"></i>
+          </div>
+          <div class="my-2">
+            <div class="text-2xl font-black text-slate-900" id="cardP2Pct">0%</div>
+            <p class="text-[11px] font-semibold text-slate-600 mt-0.5">CTPS Air Mengalir</p>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-1.5">
+            <div id="barP2" class="bg-blue-500 h-1.5 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Pilar 3 -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-slate-500">
+            <span class="font-bold uppercase text-[10px] text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded">Pilar 3</span>
+            <i class="fa-solid fa-utensils text-cyan-600 text-base"></i>
+          </div>
+          <div class="my-2">
+            <div class="text-2xl font-black text-slate-900" id="cardP3Pct">0%</div>
+            <p class="text-[11px] font-semibold text-slate-600 mt-0.5">PAMM Sehat (Minum & Makanan)</p>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-1.5">
+            <div id="barP3" class="bg-cyan-500 h-1.5 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Pilar 4 -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-slate-500">
+            <span class="font-bold uppercase text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded">Pilar 4</span>
+            <i class="fa-solid fa-trash-can text-amber-600 text-base"></i>
+          </div>
+          <div class="my-2">
+            <div class="text-2xl font-black text-slate-900" id="cardP4Pct">0%</div>
+            <p class="text-[11px] font-semibold text-slate-600 mt-0.5">Tempat Sampah Memenuhi Syarat</p>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-1.5">
+            <div id="barP4" class="bg-amber-500 h-1.5 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+
+        <!-- Pilar 5 -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between col-span-2 md:col-span-1">
+          <div class="flex items-center justify-between text-xs text-slate-500">
+            <span class="font-bold uppercase text-[10px] text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">Pilar 5</span>
+            <i class="fa-solid fa-water text-indigo-600 text-base"></i>
+          </div>
+          <div class="my-2">
+            <div class="text-2xl font-black text-slate-900" id="cardP5Pct">0%</div>
+            <p class="text-[11px] font-semibold text-slate-600 mt-0.5">Saluran SPAL Tertutup</p>
+          </div>
+          <div class="w-full bg-slate-100 rounded-full h-1.5">
+            <div id="barP5" class="bg-indigo-500 h-1.5 rounded-full" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Baris Grafik Interaktif -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Grafik Bar Capaian 5 Pilar Keseluruhan -->
+        <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm lg:col-span-7 flex flex-col justify-between">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+            <div>
+              <h3 class="font-extrabold text-slate-900 text-sm md:text-base flex items-center gap-2">
+                <i class="fa-solid fa-chart-column text-stbm-600"></i>
+                Persentase Kepatuhan Per Pilar STBM
+              </h3>
+              <p class="text-xs text-slate-500">Berdasarkan data tersurvei di seluruh KK terdata</p>
+            </div>
+            <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg self-start">Target: 100%</span>
+          </div>
+          <div class="h-64 sm:h-72">
+            <canvas id="chartPilarUtama"></canvas>
+          </div>
+        </div>
+
+        <!-- Donut Akses Sarana Air & Jamban -->
+        <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm lg:col-span-5 flex flex-col justify-between">
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-sm md:text-base flex items-center gap-2 mb-1">
+              <i class="fa-solid fa-faucet text-air-600"></i>
+              Distribusi Sarana Air Bersih KK
+            </h3>
+            <p class="text-xs text-slate-500 mb-3">Sumber utama pemenuhan kebutuhan sanitasi harian</p>
+            <div class="h-56 relative flex items-center justify-center">
+              <canvas id="chartSaranaAir"></canvas>
+            </div>
+          </div>
+          <div class="pt-3 border-t border-slate-100 text-xs text-slate-600 grid grid-cols-2 gap-2" id="legendAir">
+            <!-- Legend via JS -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Grafik Capaian Pilar 1 (ODF) per Desa -->
+      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-3">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+          <div>
+            <h3 class="font-extrabold text-slate-900 text-base flex items-center gap-2">
+              <i class="fa-solid fa-map-location-dot text-emerald-600"></i>
+              Tingkat Kepemilikan Jamban Sehat Mandiri per Desa
+            </h3>
+            <p class="text-xs text-slate-500">Persentase Kepala Keluarga yang telah menggunakan Jamban Closet/WC Sendiri</p>
+          </div>
+          <span class="text-xs font-medium text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+            Kecamatan Mandrehe Utara
+          </span>
+        </div>
+        <div class="h-72 w-full">
+          <canvas id="chartPerDesa"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- PANEL 2: FORMULIR INPUT DATA 5 PILAR STBM  -->
+    <!-- ========================================== -->
+    <section id="panel-form" class="hidden space-y-6">
+      
+      <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <!-- Form Header -->
+        <div class="bg-gradient-to-r from-stbm-700 to-emerald-600 p-6 text-white flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <span class="text-[11px] font-bold uppercase tracking-wider bg-black/20 px-2.5 py-1 rounded-md">Formulir Lapangan Sanitarian</span>
+            <h2 class="text-xl md:text-2xl font-black mt-1">Input Data Kepala Keluarga & 5 Pilar STBM</h2>
+            <p class="text-xs text-emerald-100 mt-1">Isi formulir secara teliti berdasarkan observasi lapangan dan wawancara sanitasi rumah tangga.</p>
+          </div>
+          <div class="text-right text-xs bg-white/10 p-3 rounded-2xl border border-white/20">
+            <p class="text-emerald-200">Kecamatan Mandrehe Utara</p>
+            <p class="font-bold text-white text-sm">UPT Puskesmas Mandrehe Utara</p>
+          </div>
+        </div>
+
+        <!-- Form Body -->
+        <form id="formSTBM" onsubmit="handleFormSubmit(event)" class="p-6 md:p-8 space-y-8 text-xs">
+          
+          <!-- SEKSI 1: IDENTITAS WILAYAH & KK -->
+          <div>
+            <h3 class="text-sm font-black text-slate-900 uppercase tracking-wide border-b pb-2 mb-4 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">1</span>
+              Identitas Wilayah & Kepala Keluarga (KK)
+            </h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Desa Binaan <span class="text-red-500">*</span></label>
+                <select id="inputDesa" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-stbm-500 focus:outline-none">
+                  <option value="">-- Pilih Desa (12 Desa) --</option>
+                  <option value="Hilimbuasi">Desa Hilimbuasi</option>
+                  <option value="Lahagu">Desa Lahagu</option>
+                  <option value="Lologundre">Desa Lologundre</option>
+                  <option value="Ononamolo I">Desa Ononamolo I</option>
+                  <option value="Taraha">Desa Taraha</option>
+                  <option value="Balodano">Desa Balodano</option>
+                  <option value="Hilisangawola">Desa Hilisangawola</option>
+                  <option value="Sihareo">Desa Sihareo</option>
+                  <option value="Tarahoso">Desa Tarahoso</option>
+                  <option value="Onolimbu Raya">Desa Onolimbu Raya</option>
+                  <option value="Hiliwalo'o">Desa Hiliwalo'o</option>
+                  <option value="Mazingo">Desa Mazingo</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Dusun / RT / RW</label>
+                <input type="text" id="inputDusun" placeholder="Contoh: Dusun I / RT 02" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-stbm-500 focus:outline-none">
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Nama Kepala Keluarga (KK) <span class="text-red-500">*</span></label>
+                <input type="text" id="inputNamaKK" required placeholder="Contoh: Ama Martin Hia" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-stbm-500 focus:outline-none">
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Nomor Handphone / WhatsApp</label>
+                <input type="tel" id="inputHP" placeholder="08xxxxxxxxxx" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-stbm-500 focus:outline-none">
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Jumlah Anggota Keluarga (Jiwa)</label>
+                <input type="number" min="1" id="inputJiwa" value="4" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-stbm-500 focus:outline-none">
+              </div>
+
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Petugas Sanitarian / Surveyor</label>
+                <input type="text" id="inputSurveyor" value="Petugas Kesling Mandrehe Utara" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-stbm-500 focus:outline-none">
+              </div>
+
+              <div class="sm:col-span-2">
+                <label class="block font-bold text-slate-700 mb-1">Sumber Utama Sarana Air Bersih <span class="text-red-500">*</span></label>
+                <select id="inputSaranaAir" required class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-stbm-500 focus:outline-none">
+                  <option value="Sumur Gali">Sumur Gali (Tradisional)</option>
+                  <option value="Sumur Gali Pompa">Sumur Gali dengan Pompa Listrik</option>
+                  <option value="PAMSIMAS / Perpipaan">Perpipaan Desa (PAMSIMAS)</option>
+                  <option value="PDAM">PDAM Tirta</option>
+                  <option value="Mata Air / Sungai">Mata Air Alami / Sungai</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEKSI 2: PILAR 1 - STOP BABS (SBS) -->
+          <div class="p-5 bg-emerald-50/50 rounded-2xl border border-emerald-200">
+            <h3 class="text-sm font-black text-emerald-900 uppercase tracking-wide pb-2 mb-3 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">P1</span>
+              Pilar 1: Stop Buang Air Besar Sembarangan (SBS / Akses Jamban)
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Status Kepemilikan & Jenis Jamban <span class="text-red-500">*</span></label>
+                <select id="inputPilar1" required class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-stbm-500 focus:outline-none">
+                  <option value="Closet/WC Sendiri">Milik Sendiri (Leher Angsa / Closet Sehat)</option>
+                  <option value="Sharing (Closet/WC)">Sharing / Menumpang (Closet/WC Sehat)</option>
+                  <option value="Cemplung">Jamban Cemplung / Cubluk (Kurang Sehat)</option>
+                  <option value="Sharing (Cemplung)">Sharing / Menumpang (Cemplung)</option>
+                  <option value="BABS / Tidak Ada">Tidak Punya Jamban (BABS di Kebun / Sungai)</option>
+                </select>
+              </div>
+              <div class="flex items-center text-slate-600 text-xs italic bg-white p-3 rounded-xl border border-emerald-100">
+                <span>Catatan: Untuk mencapai kriteria <strong>Desa ODF (Open Defecation Free)</strong>, 100% warga harus memiliki akses ke jamban sehat dan tidak buang air di ruang terbuka.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEKSI 3: PILAR 2 - CUCI TANGAN PAKAI SABUN (CTPS) -->
+          <div class="p-5 bg-blue-50/50 rounded-2xl border border-blue-200">
+            <h3 class="text-sm font-black text-blue-900 uppercase tracking-wide pb-2 mb-3 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-bold">P2</span>
+              Pilar 2: Cuci Tangan Pakai Sabun (CTPS)
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Sarana Tempat Cuci Tangan yang Digunakan</label>
+                <select id="inputPilar2Sarana" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                  <option value="Wastafel dengan Sabun">Wastafel Lengkap Sabun & Air Mengalir</option>
+                  <option value="Kran Saja dengan Sabun">Kran Halaman/Dapur dengan Sabun</option>
+                  <option value="Kran Saja Tanpa Sabun">Kran Saja (Tanpa Sabun)</option>
+                  <option value="Ember / Gayung / Kobokan">Ember / Gayung / Kobokan Air</option>
+                  <option value="Tidak Ada">Tidak Ada Sarana Khusus</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Kebiasaan Mencuci Tangan Pakai Sabun pada Waktu Penting</label>
+                <select id="inputPilar2Perilaku" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                  <option value="Ya">Ya (Rutin Sebelum Makan & Setelah BAB)</option>
+                  <option value="Tidak">Tidak / Jarang Menggunakan Sabun</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEKSI 4: PILAR 3 - PENGELOLAAN AIR MINUM & MAKANAN RUMAH TANGGA -->
+          <div class="p-5 bg-cyan-50/50 rounded-2xl border border-cyan-200">
+            <h3 class="text-sm font-black text-cyan-900 uppercase tracking-wide pb-2 mb-3 flex items-center gap-2">
+              <span class="w-6 h-6 rounded-lg bg-cyan-600 text-white flex items-center justify-center text-xs font-bold">P3</span>
+              Pilar 3: Pengelolaan Air Minum dan Makanan Rumah Tangga (PAMM-RT)
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Air Minum yang Dikonsumsi</label>
+                <select id="inputPilar3Air" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                  <option value="Air Rebusan Matang">Air Rebusan Matang (Mendidih)</option>
+                  <option value="Air Isi Ulang (Galon)">Air Depot Isi Ulang (Galon)</option>
+                  <option value="Air Kemasan Bermerek">Air Kemasan Bermerek (Segel)</option>
+                  <option value="Air Mentah (Tanpa Dimasak)">Air Mentah / Tidak Dimasak</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Penyajian Makanan Rumah Tangga</label>
+                <select id="inputPilar3Makanan" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                  <option value="Tertutup">Tertutup (Tudung Saji / Lemari Makanan)</option>
+                  <option value="Tidak Tertutup">Terbuka / Rentan Lalat & Debu</option>
+                </select>
+              </div>
+              <div>
+                <label class="block font-bold text-slate-700 mb-1">Peralatan Masak & Makan</label>
+                <select id="inputPilar3Alat" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                  <option value="Bersih & Aman">Dibersihkan & Ditata Aman (Rak Bersih)</option>
+                  <option value="Kurang Higienis">Kurang Higienis / Ditaruh Sembarangan</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- SEKSI 5: PILAR 4 & PILAR 5 -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- PILAR 4: SAMPAH -->
+            <div class="p-5 bg-amber-50/50 rounded-2xl border border-amber-200">
+              <h3 class="text-sm font-black text-amber-900 uppercase tracking-wide pb-2 mb-3 flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-amber-600 text-white flex items-center justify-center text-xs font-bold">P4</span>
+                Pilar 4: Pengelolaan Sampah Rumah Tangga
+              </h3>
+              <div class="space-y-3">
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Ketersediaan Tempat Sampah Memenuhi Syarat</label>
+                  <select id="inputPilar4Syarat" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    <option value="Ya (Tertutup & Kedap)">Ya (Tempat Sampah Tertutup & Tidak Bocor)</option>
+                    <option value="Tidak (Terbuka/Bocor)">Tidak (Terbuka / Berserakan)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Perlakuan / Pembuangan Akhir Sampah</label>
+                  <select id="inputPilar4Metode" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    <option value="Dipilah & Daur Ulang / Kompos">Dipilah / Dibuat Kompos / Bank Sampah</option>
+                    <option value="Diangkut Petugas Kebersihan">Diangkut Petugas Kebersihan</option>
+                    <option value="Ditimbun / Dibakar">Ditimbun Lubang Sampah / Dibakar</option>
+                    <option value="Dibuang ke Jurang / Sungai">Dibuang ke Sungai / Semak-semak</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- PILAR 5: LIMBAH CAIR -->
+            <div class="p-5 bg-indigo-50/50 rounded-2xl border border-indigo-200">
+              <h3 class="text-sm font-black text-indigo-900 uppercase tracking-wide pb-2 mb-3 flex items-center gap-2">
+                <span class="w-6 h-6 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">P5</span>
+                Pilar 5: Pengelolaan Limbah Cair Rumah Tangga
+              </h3>
+              <div class="space-y-3">
+                <div>
+                  <label class="block font-bold text-slate-700 mb-1">Saluran Pembuangan Air Limbah (SPAL) Dapur/Mandi</label>
+                  <select id="inputPilar5Saluran" class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    <option value="Saluran Tertutup (SPAL Sehat)">Saluran Pipa Tertutup ke Resapan / IPAL</option>
+                    <option value="Halaman Rumah (Galian Terbuka)">Mengalir Bebas ke Halaman / Parit Terbuka</option>
+                    <option value="Langsung ke Sungai / Parit Terbuka">Langsung Dibuang ke Sungai</option>
+                    <option value="Tergenang di Sekitar Dapur">Tergenang Mengundang Sarang Nyamuk</option>
+                  </select>
+                </div>
+                <div class="p-2.5 bg-white rounded-xl border border-indigo-100 text-[11px] text-slate-500">
+                  <i class="fa-solid fa-circle-info text-indigo-500 mr-1"></i> SPAL sehat tidak menimbulkan bau busuk dan tidak menjadi tempat perindukan jentik nyamuk DBD.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tombol Aksi Submit Form -->
+          <div class="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-end gap-3">
+            <button type="reset" class="w-full sm:w-auto px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition">
+              Reset Formulir
+            </button>
+            <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-stbm-600 hover:bg-stbm-700 text-white font-extrabold rounded-xl shadow-lg shadow-stbm-600/30 transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              Simpan Data Pendataan STBM
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- PANEL 3: REKAPITULASI DATA TABEL EXCEL     -->
+    <!-- ========================================== -->
+    <section id="panel-tabel" class="hidden space-y-6">
+      
+      <!-- Top Actions Bar -->
+      <div class="bg-white p-5 rounded-3xl border border-slate-200/80 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <span class="text-[11px] font-bold text-stbm-700 bg-stbm-50 px-2.5 py-1 rounded-md uppercase">Format Lembar Kerja STBM</span>
+          <h2 class="text-lg md:text-xl font-black text-slate-900 mt-1">Tabel Rekapitulasi Pendataan 5 Pilar STBM</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Struktur data terperinci sesuai format baku Kemenkes RI & Form Excel Puskesmas Mandrehe Utara</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <!-- Filter Desa -->
+          <div class="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
+            <i class="fa-solid fa-filter text-slate-400"></i>
+            <select id="filterDesaSelect" onchange="applyFilters()" class="bg-transparent font-semibold text-slate-700 focus:outline-none">
+              <option value="SEMUA">-- Semua Desa (12 Desa) --</option>
+              <option value="Hilimbuasi">Hilimbuasi</option>
+              <option value="Lahagu">Lahagu</option>
+              <option value="Lologundre">Lologundre</option>
+              <option value="Ononamolo I">Ononamolo I</option>
+              <option value="Taraha">Taraha</option>
+              <option value="Balodano">Balodano</option>
+              <option value="Hilisangawola">Hilisangawola</option>
+              <option value="Sihareo">Sihareo</option>
+              <option value="Tarahoso">Tarahoso</option>
+              <option value="Onolimbu Raya">Onolimbu Raya</option>
+              <option value="Hiliwalo'o">Hiliwalo'o</option>
+              <option value="Mazingo">Mazingo</option>
+            </select>
+          </div>
+
+          <!-- Cari KK -->
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+            <input type="text" id="cariNamaKK" onkeyup="applyFilters()" placeholder="Cari nama KK..." class="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-1 focus:ring-stbm-500 focus:outline-none">
+          </div>
+
+          <!-- Tombol Export & Print -->
+          <button onclick="exportToCSV()" class="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-file-csv text-sm"></i> Unduh CSV
+          </button>
+          <button onclick="cetakRekapitulasi()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-print text-sm"></i> Cetak Laporan
+          </button>
+        </div>
+      </div>
+
+      <!-- Area Tabel Multi-Header (Excel Style) -->
+      <div id="printAreaTabel" class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        
+        <!-- KOP Cetak (Hanya tampil saat print) -->
+        <div class="hidden print:block p-4 border-b-2 border-slate-900 text-center mb-4">
+          <h3 class="text-xs uppercase font-bold tracking-widest text-slate-600">Pemerintah Kabupaten Nias Barat - Dinas Kesehatan</h3>
+          <h1 class="text-base font-black uppercase text-slate-900">UPT PUSKESMAS MANDREHE UTARA</h1>
+          <p class="text-[11px] text-slate-500">LAPORAN REKAPITULASI HASIL PENDATAAN 5 PILAR STBM TINGKAT RUMAH TANGGA</p>
+        </div>
+
+        <div class="overflow-x-auto max-h-[620px]">
+          <table class="w-full text-left border-collapse text-[11px]" id="tabelSTBM">
+            <thead class="bg-slate-100 text-slate-700 font-bold uppercase sticky top-0 z-20 shadow-xs border-b border-slate-300">
+              <!-- Header Baris 1: Grup Pilar -->
+              <tr class="bg-slate-200/90 text-slate-800">
+                <th rowspan="2" class="py-2.5 px-3 border border-slate-300 text-center">No</th>
+                <th rowspan="2" class="py-2.5 px-3 border border-slate-300">Desa & Lokasi</th>
+                <th rowspan="2" class="py-2.5 px-3 border border-slate-300">Nama KK & HP</th>
+                <th rowspan="2" class="py-2.5 px-2 border border-slate-300 text-center">Jiwa</th>
+                <th rowspan="2" class="py-2.5 px-3 border border-slate-300">Sarana Air</th>
+                <th colspan="2" class="py-2 px-3 border border-slate-300 text-center bg-emerald-100/80 text-emerald-900">PILAR 1 (Bebas BABS)</th>
+                <th colspan="2" class="py-2 px-3 border border-slate-300 text-center bg-blue-100/80 text-blue-900">PILAR 2 (CTPS)</th>
+                <th colspan="3" class="py-2 px-3 border border-slate-300 text-center bg-cyan-100/80 text-cyan-900">PILAR 3 (PAMM-RT)</th>
+                <th colspan="2" class="py-2 px-3 border border-slate-300 text-center bg-amber-100/80 text-amber-900">PILAR 4 (Sampah)</th>
+                <th colspan="1" class="py-2 px-3 border border-slate-300 text-center bg-indigo-100/80 text-indigo-900">PILAR 5 (SPAL)</th>
+                <th rowspan="2" class="py-2.5 px-3 border border-slate-300 text-center">Status STBM</th>
+                <th rowspan="2" class="py-2.5 px-3 border border-slate-300 text-center no-print">Aksi</th>
+              </tr>
+              <!-- Header Baris 2: Sub-Kolom Tiap Pilar -->
+              <tr class="text-[10px] bg-slate-100">
+                <!-- Pilar 1 -->
+                <th class="py-2 px-2.5 border border-slate-300 text-emerald-950">Jenis Akses Jamban</th>
+                <th class="py-2 px-2 border border-slate-300 text-center text-emerald-950">SBS?</th>
+                <!-- Pilar 2 -->
+                <th class="py-2 px-2.5 border border-slate-300 text-blue-950">Tempat Cuci Tangan</th>
+                <th class="py-2 px-2 border border-slate-300 text-center text-blue-950">Sabun?</th>
+                <!-- Pilar 3 -->
+                <th class="py-2 px-2.5 border border-slate-300 text-cyan-950">Air Minum</th>
+                <th class="py-2 px-2 border border-slate-300 text-center text-cyan-950">Tutup?</th>
+                <th class="py-2 px-2 border border-slate-300 text-center text-cyan-950">Alat?</th>
+                <!-- Pilar 4 -->
+                <th class="py-2 px-2 border border-slate-300 text-center text-amber-950">Syarat?</th>
+                <th class="py-2 px-2.5 border border-slate-300 text-amber-950">Kelola Sampah</th>
+                <!-- Pilar 5 -->
+                <th class="py-2 px-2.5 border border-slate-300 text-indigo-950">Saluran SPAL</th>
+              </tr>
+            </thead>
+            <tbody id="tbodySTBM" class="divide-y divide-slate-200 font-medium text-slate-700 bg-white">
+              <!-- Data dimasukkan secara dinamis melalui script JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Table Footer / Counter Info -->
+        <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-2 no-print">
+          <div>
+            Menampilkan <span id="countFiltered" class="font-bold text-slate-800">0</span> dari total <span id="countTotal" class="font-bold text-slate-800">0</span> KK tersurvei.
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> 5 Pilar Tuntas</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> Perlu Pembinaan</span>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- PANEL 4: PANDUAN STANDAR 5 PILAR STBM      -->
+    <!-- ========================================== -->
+    <section id="panel-panduan" class="hidden space-y-6">
+      
+      <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+        <div>
+          <span class="text-xs font-bold text-stbm-700 bg-stbm-50 px-2.5 py-1 rounded-md uppercase">Pedoman Teknis Sanitasi</span>
+          <h2 class="text-xl font-extrabold text-slate-900 mt-1">Kriteria Baku Penilaian 5 Pilar STBM (Permenkes RI No. 3 Tahun 2014)</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Panduan lapangan bagi Sanitarian, Petugas Promkes, Bidan Desa, dan Kader dalam memverifikasi status KK di 12 Desa Mandrehe Utara.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+          
+          <!-- Panduan 1 -->
+          <div class="p-5 rounded-2xl border border-emerald-200 bg-emerald-50/40 space-y-2">
+            <div class="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm">1</div>
+            <h4 class="font-black text-slate-900 text-sm">Pilar 1: Stop BABS (SBS / ODF)</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Seluruh anggota keluarga buang air besar hanya di jamban yang sehat (leher angsa bertangki septik atau cubluk berpenutup aman), tidak ada tinja yang mencemari tanah atau badan air.
+            </p>
+            <div class="pt-2 text-[11px] font-bold text-emerald-800">Indikator Lulus: Milik Sendiri / Sharing Sehat.</div>
+          </div>
+
+          <!-- Panduan 2 -->
+          <div class="p-5 rounded-2xl border border-blue-200 bg-blue-50/40 space-y-2">
+            <div class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm">2</div>
+            <h4 class="font-black text-slate-900 text-sm">Pilar 2: Cuci Tangan Pakai Sabun (CTPS)</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Tersedia sarana cuci tangan dengan air bersih mengalir dan sabun di dekat jamban/dapur. Dipraktikkan pada 5 waktu kritis (sebelum makan, sebelum mengolah makanan, setelah BAB, setelah menceboki anak, sebelum menyusui).
+            </p>
+            <div class="pt-2 text-[11px] font-bold text-blue-800">Indikator Lulus: Air mengalir + Sabun selalu ada.</div>
+          </div>
+
+          <!-- Panduan 3 -->
+          <div class="p-5 rounded-2xl border border-cyan-200 bg-cyan-50/40 space-y-2">
+            <div class="w-8 h-8 rounded-xl bg-cyan-600 text-white flex items-center justify-center font-bold text-sm">3</div>
+            <h4 class="font-black text-slate-900 text-sm">Pilar 3: Pengelolaan Air Minum & Makanan (PAMM-RT)</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Air minum diolah terlebih dahulu (dimasak mendidih atau air galon/kemasan terjamin). Makanan disimpan tertutup rapat dari lalat, debu, dan binatang peliharaan, serta perlengkapan masak bersih.
+            </p>
+            <div class="pt-2 text-[11px] font-bold text-cyan-800">Indikator Lulus: Air masak/galon + Makanan tertutup.</div>
+          </div>
+
+          <!-- Panduan 4 -->
+          <div class="p-5 rounded-2xl border border-amber-200 bg-amber-50/40 space-y-2">
+            <div class="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold text-sm">4</div>
+            <h4 class="font-black text-slate-900 text-sm">Pilar 4: Pengelolaan Sampah Rumah Tangga</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Tidak ada sampah berserakan di pekarangan rumah. Tersedia tempat sampah tertutup dan tidak bocor di dalam/luar rumah, serta dilakukan pemilahan, pembakaran aman atau pengomposan.
+            </p>
+            <div class="pt-2 text-[11px] font-bold text-amber-800">Indikator Lulus: Wadah sampah memenuhi syarat.</div>
+          </div>
+
+          <!-- Panduan 5 -->
+          <div class="p-5 rounded-2xl border border-indigo-200 bg-indigo-50/40 space-y-2">
+            <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">5</div>
+            <h4 class="font-black text-slate-900 text-sm">Pilar 5: Pengelolaan Limbah Cair Rumah Tangga</h4>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              Air limbah bekas mandi dan cuci dapur tidak tergenang di sekitar rumah yang dapat menimbulkan bau busuk dan sarang nyamuk, melainkan dialirkan melalui pipa/SPAL tertutup ke sumur resapan.
+            </p>
+            <div class="pt-2 text-[11px] font-bold text-indigo-800">Indikator Lulus: Saluran tertutup (SPAL Sehat).</div>
+          </div>
+
+          <!-- Indikator Desa ODF / 5 Pilar -->
+          <div class="p-5 rounded-2xl border border-emerald-300 bg-gradient-to-br from-emerald-600 to-stbm-800 text-white space-y-2 flex flex-col justify-between">
+            <div>
+              <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center font-bold text-sm">✓</div>
+              <h4 class="font-black text-white text-sm mt-2">Status Desa ODF & Desa STBM Tuntas</h4>
+              <p class="text-xs text-emerald-100 leading-relaxed mt-1">
+                - <strong>Desa ODF (Open Defecation Free):</strong> Jika 100% KK sudah lulus Pilar 1.<br>
+                - <strong>Desa STBM 5 Pilar:</strong> Jika seluruh warga memenuhi standar Pilar 1 hingga Pilar 5 secara berkesinambungan.
+              </p>
+            </div>
+            <div class="pt-2 text-[11px] font-semibold text-emerald-200">Kecamatan Mandrehe Utara Menuju Mandiri Sanitasi</div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- FOOTER -->
+  <!-- ========================================== -->
+  <footer class="bg-white border-t border-slate-200 py-6 text-xs text-slate-500 no-print mt-8">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <p>&copy; 2026 UPT Puskesmas Mandrehe Utara - Dinas Kesehatan Kabupaten Nias Barat.</p>
+      <div class="flex items-center space-x-3">
+        <span>Sistem Digital Pendataan STBM 5 Pilar</span>
+        <span>•</span>
+        <span class="text-emerald-700 font-bold"><i class="fa-solid fa-leaf"></i> Menuju Nias Barat Sehat & Bersih</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT LOGIKA, GRAFIK & DATA SAMPEL -->
+  <!-- ========================================== -->
+  <script>
+    // DATA AWAL SAMPEL REALISTIS (12 KK dari beberapa desa di Mandrehe Utara)
+    let dataSTBM = [
+      {
+        id: "KK-MU-001",
+        desa: "Hilimbuasi",
+        dusun: "Dusun I",
+        namaKK: "Ama Martin Hia",
+        hp: "081263459901",
+        jiwa: 5,
+        saranaAir: "Sumur Gali Pompa",
+        pilar1: "Closet/WC Sendiri",
+        pilar2Sarana: "Wastafel dengan Sabun",
+        pilar2Perilaku: "Ya",
+        pilar3Air: "Air Rebusan Matang",
+        pilar3Makanan: "Tertutup",
+        pilar3Alat: "Bersih & Aman",
+        pilar4Syarat: "Ya (Tertutup & Kedap)",
+        pilar4Metode: "Dipilah & Daur Ulang / Kompos",
+        pilar5Saluran: "Saluran Tertutup (SPAL Sehat)"
+      },
+      {
+        id: "KK-MU-002",
+        desa: "Lahagu",
+        dusun: "Dusun II",
+        namaKK: "Ama Riko Halawa",
+        hp: "082165882310",
+        jiwa: 4,
+        saranaAir: "PAMSIMAS / Perpipaan",
+        pilar1: "Closet/WC Sendiri",
+        pilar2Sarana: "Kran Saja dengan Sabun",
+        pilar2Perilaku: "Ya",
+        pilar3Air: "Air Isi Ulang (Galon)",
+        pilar3Makanan: "Tertutup",
+        pilar3Alat: "Bersih & Aman",
+        pilar4Syarat: "Ya (Tertutup & Kedap)",
+        pilar4Metode: "Ditimbun / Dibakar",
+        pilar5Saluran: "Saluran Tertutup (SPAL Sehat)"
+      },
+      {
+        id: "KK-MU-003",
+        desa: "Lologundre",
+        dusun: "Dusun I",
+        namaKK: "Ama Putri Gulo",
+        hp: "085277123490",
+        jiwa: 6,
+        saranaAir: "Sumur Gali",
+        pilar1: "Cemplung",
+        pilar2Sarana: "Ember / Gayung / Kobokan",
+        pilar2Perilaku: "Tidak",
+        pilar3Air: "Air Rebusan Matang",
+        pilar3Makanan: "Tertutup",
+        pilar3Alat: "Bersih & Aman",
+        pilar4Syarat: "Tidak (Terbuka/Bocor)",
+        pilar4Metode: "Ditimbun / Dibakar",
+        pilar5Saluran: "Halaman Rumah (Galian Terbuka)"
+      },
+      {
+        id: "KK-MU-004",
+        desa: "Ononamolo I",
+        dusun: "Dusun III",
+        namaKK: "Ina Fenny Daeli",
+        hp: "081390881234",
+        jiwa: 3,
+        saranaAir: "Mata Air / Sungai",
+        pilar1: "BABS / Tidak Ada",
+        pilar2Sarana: "Tidak Ada",
+        pilar2Perilaku: "Tidak",
+        pilar3Air: "Air Rebusan Matang",
+        pilar3Makanan: "Tidak Tertutup",
+        pilar3Alat: "Kurang Higienis",
+        pilar4Syarat: "Tidak (Terbuka/Bocor)",
+        pilar4Metode: "Dibuang ke Jurang / Sungai",
+        pilar5Saluran: "Langsung ke Sungai / Parit Terbuka"
+      },
+      {
+        id: "KK-MU-005",
+        desa: "Taraha",
+        dusun: "Dusun I",
+        namaKK: "Ama Kevin Waruwu",
+        hp: "082361229988",
+        jiwa: 4,
+        saranaAir: "Sumur Gali Pompa",
+        pilar1: "Closet/WC Sendiri",
+        pilar2Sarana: "Wastafel dengan Sabun",
+        pilar2Perilaku: "Ya",
+        pilar3Air: "Air Rebusan Matang",
+        pilar3Makanan: "Tertutup",
+        pilar3Alat: "Bersih & Aman",
+        pilar4Syarat: "Ya (Tertutup & Kedap)",
+        pilar4Metode: "Ditimbun / Dibakar",
+        pilar5Saluran: "Saluran Tertutup (SPAL Sehat)"
+      },
+      {
+        id: "KK-MU-006",
+        desa: "Balodano",
+        dusun: "Dusun II",
+        namaKK: "Ama Yanto Hia",
+        hp: "085377884433",
+        jiwa: 5,
+        saranaAir: "PAMSIMAS / Perpipaan",
+        pilar1: "Sharing (Closet/WC)",
+        pilar2Sarana: "Kran Saja dengan Sabun",
+        pilar2Perilaku: "Ya",
+        pilar3Air: "Air Isi Ulang (Galon)",
+        pilar3Makanan: "Tertutup",
+        pilar3Alat: "Bersih & Aman",
+        pilar4Syarat: "Tidak (Terbuka/Bocor)",
+        pilar4Metode: "Ditimbun / Dibakar",
+        pilar5Saluran: "Halaman Rumah (Galian Terbuka)"
+      },
+      {
+        id: "KK-MU-007",
+        desa: "Hilisangawola",
+        dusun: "Dusun I",
+        namaKK: "Ina Gita Zai",
+        hp: "081267890011",
+        jiwa: 4,
+        saranaAir: "Sumur Gali",
+        pilar1: "Closet/WC Sendiri",
+        pilar2Sarana: "Kran Saja dengan Sabun",
+        pilar2Perilaku: "Ya",
+        pilar3Air: "Air Rebusan Matang",
+        pilar3Makanan: "Tertutup",
+        pilar3Alat: "Bersih & Aman",
+        pilar4Syarat: "Ya (Tertutup & Kedap)",
+        pilar4Metode: "Dipilah & Daur Ulang / Kompos",
+        pilar5Saluran: "Saluran Tertutup (SPAL Sehat)"
+      },
+      {
+        id: "KK-MU-008",
+        desa: "Sihareo",
+        dusun: "Dusun II",
+        namaKK: "Ama Dian Lase",
+        hp: "082278901234",
+        jiwa: 5,
+        saranaAir: "PAMSIMAS / Perpipaan",
+        pilar1: "Closet/WC Sendiri",
+        pilar2Sarana: "Wastafel dengan Sabun",
+        pilar2Perilaku: "Ya",
+        pilar3Air: "Air Isi Ulang (Galon)",
+        pilar3Makanan: "Tertutup",
+        pilar3Alat: "Bersih & Aman",
+        pilar4Syarat: "Ya (Tertutup & Kedap)",
+        pilar4Metode: "Diangkut Petugas Kebersihan",
+        pilar5Saluran: "Saluran Tertutup (SPAL Sehat)"
+      },
+      {
+        id: "KK-MU-009",
+        desa: "Tarahoso",
+        dusun: "Dusun I",
+        namaKK: "Ama Nofa Lahagu",
+        hp: "085261334455",
+        jiwa: 4,
+        saranaAir: "Sumur Gali",
+        pilar1: "Cemplung",
+        pilar2Sarana: "Ember / Gayung / Kobokan",
+        pilar2Perilaku: "Tidak",
+        pilar3Air: "Air Rebusan Matang",
+        pilar3Makanan: "Tertutup",
+        pilar3Alat: "Bersih & Aman",
+        pilar4Syarat: "Tidak (Terbuka/Bocor)",
+        pilar4Metode: "Ditimbun / Dibakar",
+        pilar5Saluran: "Halaman Rumah (Galian Terbuka)"
+      },
+      {
+        id: "KK-MU-010",
+        desa: "Onolimbu Raya",
+        dusun: "Dusun I",
+        namaKK: "Ina Cindy Daeli",
+        hp: "081377889900",
+        jiwa: 6,
+        saranaAir: "Sumur Gali Pompa",
+        pilar1: "Closet/WC Sendiri",
+        pilar2Sarana: "Wastafel dengan Sabun",
+        pilar2Perilaku: "Ya",
+        pilar3Air: "Air Rebusan Matang",
+        pilar3Makanan: "Tertutup",
+        pilar3Alat: "Bersih & Aman",
+        pilar4Syarat: "Ya (Tertutup & Kedap)",
+        pilar4Metode: "Dipilah & Daur Ulang / Kompos",
+        pilar5Saluran: "Saluran Tertutup (SPAL Sehat)"
+      },
+      {
+        id: "KK-MU-011",
+        desa: "Hiliwalo'o",
+        dusun: "Dusun II",
+        namaKK: "Ama Farel Gulo",
+        hp: "082366778899",
+        jiwa: 3,
+        saranaAir: "Sumur Gali",
+        pilar1: "Closet/WC Sendiri",
+        pilar2Sarana: "Kran Saja dengan Sabun",
+        pilar2Perilaku: "Ya",
+        pilar3Air: "Air Rebusan Matang",
+        pilar3Makanan: "Tertutup",
+        pilar3Alat: "Bersih & Aman",
+        pilar4Syarat: "Tidak (Terbuka/Bocor)",
+        pilar4Metode: "Ditimbun / Dibakar",
+        pilar5Saluran: "Saluran Tertutup (SPAL Sehat)"
+      },
+      {
+        id: "KK-MU-012",
+        desa: "Mazingo",
+        dusun: "Dusun I",
+        namaKK: "Ama Berkat Halawa",
+        hp: "081260112233",
+        jiwa: 5,
+        saranaAir: "PAMSIMAS / Perpipaan",
+        pilar1: "Closet/WC Sendiri",
+        pilar2Sarana: "Wastafel dengan Sabun",
+        pilar2Perilaku: "Ya",
+        pilar3Air: "Air Isi Ulang (Galon)",
+        pilar3Makanan: "Tertutup",
+        pilar3Alat: "Bersih & Aman",
+        pilar4Syarat: "Ya (Tertutup & Kedap)",
+        pilar4Metode: "Dipilah & Daur Ulang / Kompos",
+        pilar5Saluran: "Saluran Tertutup (SPAL Sehat)"
+      }
+    ];
+
+    // INSTANCE CHART
+    let chartPilarUtamaInst = null;
+    let chartSaranaAirInst = null;
+    let chartPerDesaInst = null;
+
+    // DAFTAR 12 DESA DI MANDREHE UTARA
+    const listDesa12 = [
+      "Hilimbuasi", "Lahagu", "Lologundre", "Ononamolo I", 
+      "Taraha", "Balodano", "Hilisangawola", "Sihareo", 
+      "Tarahoso", "Onolimbu Raya", "Hiliwalo'o", "Mazingo"
+    ];
+
+    // INISIALISASI SAAT HALAMAN SELESAI LOAD
+    window.addEventListener('DOMContentLoaded', () => {
+      renderTableData(dataSTBM);
+      updateDashboardCards();
+      initCharts();
+    });
+
+    // ==========================================
+    // SISTEM PINDAH TAB
+    // ==========================================
+    function switchTab(targetTab) {
+      const tabs = ['tab-dashboard', 'tab-form', 'tab-tabel', 'tab-panduan'];
+
+      tabs.forEach(t => {
+        const panel = document.getElementById(`panel-${t.replace('tab-', '')}`);
+        const btn = document.getElementById(`btn-${t}`);
+
+        if (t === targetTab) {
+          panel.classList.remove('hidden');
+          btn.className = "px-4 py-2 rounded-xl flex items-center gap-2 transition text-white bg-stbm-600 shadow-sm";
+        } else {
+          panel.classList.add('hidden');
+          btn.className = "px-4 py-2 rounded-xl flex items-center gap-2 transition text-slate-600 hover:text-slate-900 hover:bg-white";
+        }
+      });
+
+      // Update ukuran grafik jika pindah ke dashboard
+      if (targetTab === 'tab-dashboard') {
+        setTimeout(() => {
+          if (chartPilarUtamaInst) chartPilarUtamaInst.resize();
+          if (chartSaranaAirInst) chartSaranaAirInst.resize();
+          if (chartPerDesaInst) chartPerDesaInst.resize();
+        }, 50);
+      }
+    }
+
+    // ==========================================
+    // EVALUASI KELULUSAN STBM TIAP KK
+    // ==========================================
+    function checkStatusSTBM(item) {
+      // Kriteria Lulus:
+      const p1Ok = (item.pilar1 === "Closet/WC Sendiri" || item.pilar1 === "Sharing (Closet/WC)");
+      const p2Ok = (item.pilar2Perilaku === "Ya");
+      const p3Ok = (item.pilar3Air !== "Air Mentah (Tanpa Dimasak)" && item.pilar3Makanan === "Tertutup");
+      const p4Ok = (item.pilar4Syarat.includes("Ya"));
+      const p5Ok = (item.pilar5Saluran === "Saluran Tertutup (SPAL Sehat)");
+
+      const tuntasSemua = p1Ok && p2Ok && p3Ok && p4Ok && p5Ok;
+
+      return {
+        p1Ok, p2Ok, p3Ok, p4Ok, p5Ok,
+        tuntas: tuntasSemua
+      };
+    }
+
+    // ==========================================
+    // RENDER TABEL REKAPITULASI
+    // ==========================================
+    function renderTableData(items) {
+      const tbody = document.getElementById('tbodySTBM');
+      tbody.innerHTML = '';
+
+      if (items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="15" class="py-8 text-center text-slate-400">Tidak ada data pendataan yang sesuai filter.</td></tr>`;
+        document.getElementById('countFiltered').innerText = '0';
+        document.getElementById('countTotal').innerText = dataSTBM.length;
+        return;
+      }
+
+      items.forEach((d, idx) => {
+        const st = checkStatusSTBM(d);
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-200";
+        tr.innerHTML = `
+          <td class="py-2.5 px-3 border border-slate-200 text-center font-bold text-slate-400">${idx + 1}</td>
+          <td class="py-2.5 px-3 border border-slate-200">
+            <span class="font-bold text-slate-900 block">${d.desa}</span>
+            <span class="text-[10px] text-slate-400">${d.dusun || '-'}</span>
+          </td>
+          <td class="py-2.5 px-3 border border-slate-200">
+            <span class="font-bold text-slate-800 block">${d.namaKK}</span>
+            <span class="text-[10px] text-slate-400 font-mono">${d.hp || '-'}</span>
+          </td>
+          <td class="py-2.5 px-2 border border-slate-200 text-center font-semibold text-slate-700">${d.jiwa}</td>
+          <td class="py-2.5 px-3 border border-slate-200 text-slate-700 font-medium">${d.saranaAir}</td>
+          
+          <!-- Pilar 1 -->
+          <td class="py-2.5 px-2.5 border border-slate-200">
+            <span class="text-[10px] font-bold ${st.p1Ok ? 'text-emerald-700' : 'text-rose-600'}">${d.pilar1}</span>
+          </td>
+          <td class="py-2.5 px-2 border border-slate-200 text-center">
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-black ${st.p1Ok ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+              ${st.p1Ok ? 'SBS' : 'BABS'}
+            </span>
+          </td>
+
+          <!-- Pilar 2 -->
+          <td class="py-2.5 px-2.5 border border-slate-200 text-slate-600">${d.pilar2Sarana}</td>
+          <td class="py-2.5 px-2 border border-slate-200 text-center font-bold ${st.p2Ok ? 'text-blue-700' : 'text-slate-400'}">${d.pilar2Perilaku}</td>
+
+          <!-- Pilar 3 -->
+          <td class="py-2.5 px-2.5 border border-slate-200 text-slate-600">${d.pilar3Air}</td>
+          <td class="py-2.5 px-2 border border-slate-200 text-center font-bold ${d.pilar3Makanan === 'Tertutup' ? 'text-emerald-600' : 'text-amber-600'}">${d.pilar3Makanan}</td>
+          <td class="py-2.5 px-2 border border-slate-200 text-center text-slate-600">${d.pilar3Alat === 'Bersih & Aman' ? 'Ya' : 'Tdk'}</td>
+
+          <!-- Pilar 4 -->
+          <td class="py-2.5 px-2 border border-slate-200 text-center font-bold ${st.p4Ok ? 'text-emerald-700' : 'text-rose-600'}">${st.p4Ok ? 'Ya' : 'Tdk'}</td>
+          <td class="py-2.5 px-2.5 border border-slate-200 text-slate-600">${d.pilar4Metode}</td>
+
+          <!-- Pilar 5 -->
+          <td class="py-2.5 px-2.5 border border-slate-200 text-slate-600">
+            <span class="${st.p5Ok ? 'text-indigo-700 font-bold' : 'text-slate-500'}">${d.pilar5Saluran}</span>
+          </td>
+
+          <!-- Status Akhir STBM -->
+          <td class="py-2.5 px-3 border border-slate-200 text-center">
+            <span class="px-2 py-1 rounded-full text-[10px] font-black ${st.tuntas ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}">
+              ${st.tuntas ? '✓ 5 Pilar' : 'Belum Tuntas'}
+            </span>
+          </td>
+
+          <!-- Aksi Hapus -->
+          <td class="py-2.5 px-3 border border-slate-200 text-center no-print">
+            <button onclick="hapusDataKK('${d.id}')" title="Hapus data ini" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('countFiltered').innerText = items.length;
+      document.getElementById('countTotal').innerText = dataSTBM.length;
+    }
+
+    // ==========================================
+    // FILTER DATA TABEL
+    // ==========================================
+    function applyFilters() {
+      const selectedDesa = document.getElementById('filterDesaSelect').value;
+      const queryKK = document.getElementById('cariNamaKK').value.toLowerCase().trim();
+
+      const filtered = dataSTBM.filter(item => {
+        const matchDesa = (selectedDesa === "SEMUA" || item.desa === selectedDesa);
+        const matchNama = (item.namaKK.toLowerCase().includes(queryKK) || item.desa.toLowerCase().includes(queryKK));
+        return matchDesa && matchNama;
+      });
+
+      renderTableData(filtered);
+    }
+
+    // ==========================================
+    // TAMBAH DATA VIA FORMULIR
+    // ==========================================
+    function handleFormSubmit(e) {
+      e.preventDefault();
+
+      const newId = `KK-MU-${String(dataSTBM.length + 1).padStart(3, '0')}`;
+      const newEntry = {
+        id: newId,
+        desa: document.getElementById('inputDesa').value,
+        dusun: document.getElementById('inputDusun').value,
+        namaKK: document.getElementById('inputNamaKK').value,
+        hp: document.getElementById('inputHP').value,
+        jiwa: parseInt(document.getElementById('inputJiwa').value) || 4,
+        saranaAir: document.getElementById('inputSaranaAir').value,
+        pilar1: document.getElementById('inputPilar1').value,
+        pilar2Sarana: document.getElementById('inputPilar2Sarana').value,
+        pilar2Perilaku: document.getElementById('inputPilar2Perilaku').value,
+        pilar3Air: document.getElementById('inputPilar3Air').value,
+        pilar3Makanan: document.getElementById('inputPilar3Makanan').value,
+        pilar3Alat: document.getElementById('inputPilar3Alat').value,
+        pilar4Syarat: document.getElementById('inputPilar4Syarat').value,
+        pilar4Metode: document.getElementById('inputPilar4Metode').value,
+        pilar5Saluran: document.getElementById('inputPilar5Saluran').value
+      };
+
+      dataSTBM.unshift(newEntry);
+      
+      // Update UI
+      applyFilters();
+      updateDashboardCards();
+      updateCharts();
+
+      // Reset Form & Pindah ke Tabel Rekap
+      document.getElementById('formSTBM').reset();
+      switchTab('tab-tabel');
+
+      // Notifikasi ringkas
+      alert(`Data KK "${newEntry.namaKK}" dari Desa ${newEntry.desa} berhasil disimpan ke sistem!`);
+    }
+
+    // ==========================================
+    // HAPUS DATA KK
+    // ==========================================
+    function hapusDataKK(id) {
+      const idx = dataSTBM.findIndex(item => item.id === id);
+      if (idx !== -1) {
+        dataSTBM.splice(idx, 1);
+        applyFilters();
+        updateDashboardCards();
+        updateCharts();
+      }
+    }
+
+    // ==========================================
+    // HITUNG STATISTIK & UPDATE KARTU CAPAIAN
+    // ==========================================
+    function updateDashboardCards() {
+      const total = dataSTBM.length;
+      if (total === 0) return;
+
+      let p1Pass = 0, p2Pass = 0, p3Pass = 0, p4Pass = 0, p5Pass = 0;
+
+      dataSTBM.forEach(d => {
+        const st = checkStatusSTBM(d);
+        if (st.p1Ok) p1Pass++;
+        if (st.p2Ok) p2Pass++;
+        if (st.p3Ok) p3Pass++;
+        if (st.p4Ok) p4Pass++;
+        if (st.p5Ok) p5Pass++;
+      });
+
+      const pctP1 = ((p1Pass / total) * 100).toFixed(1);
+      const pctP2 = ((p2Pass / total) * 100).toFixed(1);
+      const pctP3 = ((p3Pass / total) * 100).toFixed(1);
+      const pctP4 = ((p4Pass / total) * 100).toFixed(1);
+      const pctP5 = ((p5Pass / total) * 100).toFixed(1);
+
+      document.getElementById('cardP1Pct').innerText = `${pctP1}%`;
+      document.getElementById('barP1').style.width = `${pctP1}%`;
+
+      document.getElementById('cardP2Pct').innerText = `${pctP2}%`;
+      document.getElementById('barP2').style.width = `${pctP2}%`;
+
+      document.getElementById('cardP3Pct').innerText = `${pctP3}%`;
+      document.getElementById('barP3').style.width = `${pctP3}%`;
+
+      document.getElementById('cardP4Pct').innerText = `${pctP4}%`;
+      document.getElementById('barP4').style.width = `${pctP4}%`;
+
+      document.getElementById('cardP5Pct').innerText = `${pctP5}%`;
+      document.getElementById('barP5').style.width = `${pctP5}%`;
+    }
+
+    // ==========================================
+    // INISIALISASI & UPDATE GRAFIK CHART.JS
+    // ==========================================
+    function initCharts() {
+      // 1. Chart Bar 5 Pilar Utama
+      const ctxPilar = document.getElementById('chartPilarUtama').getContext('2d');
+      chartPilarUtamaInst = new Chart(ctxPilar, {
+        type: 'bar',
+        data: getPilarChartData(),
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: context => ` Capaian: ${context.parsed.y}% KK Memenuhi Syarat`
+              }
+            }
+          },
+          scales: {
+            y: {
+              min: 0,
+              max: 100,
+              ticks: { callback: v => v + '%' },
+              grid: { color: '#f1f5f9' }
+            },
+            x: {
+              grid: { display: false }
+            }
+          }
+        }
+      });
+
+      // 2. Chart Donut Sarana Air
+      const ctxAir = document.getElementById('chartSaranaAir').getContext('2d');
+      chartSaranaAirInst = new Chart(ctxAir, {
+        type: 'doughnut',
+        data: getAirChartData(),
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          cutout: '65%'
+        }
+      });
+      renderAirLegend();
+
+      // 3. Chart Akses Jamban Sehat per Desa
+      const ctxDesa = document.getElementById('chartPerDesa').getContext('2d');
+      chartPerDesaInst = new Chart(ctxDesa, {
+        type: 'bar',
+        data: getDesaChartData(),
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: context => ` Akses Jamban Sehat: ${context.parsed.y}%`
+              }
+            }
+          },
+          scales: {
+            y: {
+              min: 0,
+              max: 100,
+              ticks: { callback: v => v + '%' },
+              grid: { color: '#f1f5f9' }
+            },
+            x: {
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    function updateCharts() {
+      if (chartPilarUtamaInst) {
+        chartPilarUtamaInst.data = getPilarChartData();
+        chartPilarUtamaInst.update();
+      }
+      if (chartSaranaAirInst) {
+        chartSaranaAirInst.data = getAirChartData();
+        chartSaranaAirInst.update();
+        renderAirLegend();
+      }
+      if (chartPerDesaInst) {
+        chartPerDesaInst.data = getDesaChartData();
+        chartPerDesaInst.update();
+      }
+    }
+
+    function getPilarChartData() {
+      const total = dataSTBM.length || 1;
+      let p1 = 0, p2 = 0, p3 = 0, p4 = 0, p5 = 0;
+
+      dataSTBM.forEach(d => {
+        const st = checkStatusSTBM(d);
+        if (st.p1Ok) p1++;
+        if (st.p2Ok) p2++;
+        if (st.p3Ok) p3++;
+        if (st.p4Ok) p4++;
+        if (st.p5Ok) p5++;
+      });
+
+      return {
+        labels: ['P1: Bebas BABS', 'P2: CTPS', 'P3: PAMM Sehat', 'P4: Kelola Sampah', 'P5: SPAL Sehat'],
+        datasets: [{
+          data: [
+            ((p1 / total) * 100).toFixed(1),
+            ((p2 / total) * 100).toFixed(1),
+            ((p3 / total) * 100).toFixed(1),
+            ((p4 / total) * 100).toFixed(1),
+            ((p5 / total) * 100).toFixed(1)
+          ],
+          backgroundColor: ['#10b981', '#3b82f6', '#06b6d4', '#f59e0b', '#6366f1'],
+          borderRadius: 8
+        }]
+      };
+    }
+
+    function getAirChartData() {
+      const counts = {
+        'Sumur Gali': 0,
+        'Sumur Gali Pompa': 0,
+        'PAMSIMAS / Perpipaan': 0,
+        'PDAM': 0,
+        'Mata Air / Sungai': 0
+      };
+
+      dataSTBM.forEach(d => {
+        if (counts[d.saranaAir] !== undefined) {
+          counts[d.saranaAir]++;
+        } else {
+          counts['Mata Air / Sungai']++;
+        }
+      });
+
+      return {
+        labels: Object.keys(counts),
+        datasets: [{
+          data: Object.values(counts),
+          backgroundColor: ['#38bdf8', '#0284c7', '#059669', '#6366f1', '#f59e0b'],
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      };
+    }
+
+    function renderAirLegend() {
+      const container = document.getElementById('legendAir');
+      const airData = getAirChartData();
+      container.innerHTML = '';
+
+      airData.labels.forEach((label, i) => {
+        const val = airData.datasets[0].data[i];
+        const color = airData.datasets[0].backgroundColor[i];
+        const div = document.createElement('div');
+        div.className = "flex items-center justify-between";
+        div.innerHTML = `
+          <div class="flex items-center gap-1.5 truncate">
+            <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${color}"></span>
+            <span class="text-[11px] truncate">${label}</span>
+          </div>
+          <span class="font-bold text-slate-800 text-[11px]">${val} KK</span>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function getDesaChartData() {
+      const labels = listDesa12;
+      const dataValues = labels.map(desa => {
+        const desaItems = dataSTBM.filter(d => d.desa === desa);
+        if (desaItems.length === 0) return 0;
+        const pass = desaItems.filter(d => checkStatusSTBM(d).p1Ok).length;
+        return ((pass / desaItems.length) * 100).toFixed(1);
+      });
+
+      return {
+        labels: labels,
+        datasets: [{
+          label: '% Akses Jamban Sehat',
+          data: dataValues,
+          backgroundColor: dataValues.map(v => v >= 75 ? '#10b981' : '#f59e0b'),
+          borderRadius: 6
+        }]
+      };
+    }
+
+    // ==========================================
+    // EKSPOR DATA KE CSV
+    // ==========================================
+    function exportToCSV() {
+      let csv = [];
+      // Header CSV
+      csv.push([
+        "ID KK", "Desa", "Dusun/RT", "Nama KK", "No HP", "Jiwa", 
+        "Sarana Air", "Pilar 1 (Akses Jamban)", "Pilar 2 (Sarana CTPS)", 
+        "Pilar 2 (Kebiasaan Sabun)", "Pilar 3 (Air Minum)", "Pilar 3 (Makanan)", 
+        "Pilar 3 (Alat)", "Pilar 4 (Tempat Sampah Syarat)", "Pilar 4 (Metode Sampah)", 
+        "Pilar 5 (Saluran SPAL)", "Status 5 Pilar"
+      ].map(c => `"${c}"`).join(','));
+
+      dataSTBM.forEach(d => {
+        const st = checkStatusSTBM(d);
+        const row = [
+          d.id, d.desa, d.dusun || '', d.namaKK, d.hp || '', d.jiwa,
+          d.saranaAir, d.pilar1, d.pilar2Sarana, d.pilar2Perilaku,
+          d.pilar3Air, d.pilar3Makanan, d.pilar3Alat, d.pilar4Syarat,
+          d.pilar4Metode, d.pilar5Saluran, st.tuntas ? "LULUS 5 PILAR" : "BELUM LULUS"
+        ].map(val => `"${String(val).replace(/"/g, '""')}"`);
+        csv.push(row.join(','));
+      });
+
+      const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Rekapitulasi_5_Pilar_STBM_Mandrehe_Utara_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // ==========================================
+    // CETAK LAPORAN
+    // ==========================================
+    function cetakRekapitulasi() {
+      window.print();
+    }
+  </script>
+</body>
+</html>
